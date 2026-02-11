@@ -60,9 +60,49 @@ async def update_reservation_time(
     logger.info(userdata.summarize())
     return f"The reservation date is updated to {reservation_time}"
 
+@function_tool()
+async def update_party_size(
+    party_size: Annotated[int, Field(description="The customer's party size")],
+    context: RunContext,
+) -> str:
+    """Called when the customer provides their party size.
+    """
+    userdata = context.userdata
+    userdata.party_size = party_size
+    logger.info("User Data Updated: ")
+    logger.info(userdata.summarize())
+    return f"The party size is updated to {party_size}"
+
+@function_tool()
+async def update_special_request(
+    special_request: Annotated[str, Field(description="The customer's special request")],
+    context: RunContext,
+) -> str:
+    """Called when the customer provides their special request.
+    """
+    userdata = context.userdata
+    userdata.special_request = special_request
+    logger.info("User Data Updated: ")
+    logger.info(userdata.summarize())
+    return f"The special request is updated to {special_request}"
+
+@function_tool()
+async def check_availability(
+    context: RunContext,
+) -> str:
+    """Called to check availability.
+    """
+    userdata = context.userdata
+    logger.info(userdata.summarize())
+    return "Not Available, The avialable is 18:20, 19:00, and 20:00"
+
+
 __all__ = [
     "update_name",
     "update_phone",
     "update_reservation_date",
     "update_reservation_time",
+    "update_party_size",
+    "update_special_request",
+    "check_availability"
 ]

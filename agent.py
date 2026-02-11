@@ -26,7 +26,10 @@ class Assistant(Agent):
                 update_name,
                 update_phone,
                 update_reservation_date,
-                update_reservation_time
+                update_reservation_time,
+                update_party_size,
+                update_special_request,
+                check_availability,
             ]
         )
 
@@ -39,7 +42,7 @@ async def my_agent(ctx: agents.JobContext):
     session = AgentSession[UserData](
         userdata=userdata,
         llm=google.realtime.RealtimeModel(
-            model="gemini-2.0-flash-exp",
+            model="gemini-2.5-flash-native-audio-preview-12-2025",
             voice="Puck",
             temperature=0.5,
         ),

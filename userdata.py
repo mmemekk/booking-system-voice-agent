@@ -10,7 +10,7 @@ class UserData:
     customer_phone: Optional[str] = None
     reservation_date: Optional[date] = None
     reservation_time: Optional[time] = None
-    reservation_capacity: Optional[int] = None
+    party_size: Optional[int] = None
     special_request: Optional[str] = None
 
     def summarize(self) -> str:
@@ -23,7 +23,7 @@ class UserData:
             # "reservation_time": self.reservation_time or "unknown",
             "reservation_date": self.reservation_date.strftime(DATE_FORMAT) if self.reservation_date is not None else "unknown",
             "reservation_time": self.reservation_time.strftime(TIME_FORMAT) if self.reservation_time is not None else "unknown",
-            "reservation_capacity": self.reservation_capacity or "unknown",
+            "party_size": self.party_size or "unknown",
             "special_request": self.special_request or "none",
         }
 
