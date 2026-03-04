@@ -28,3 +28,34 @@ class UserData:
         }
 
         return yaml.dump(data)
+    
+    def check_availability_request(self) -> Optional[dict]:
+        
+        if self.reservation_date is None or self.reservation_time is None or self.party_size is None:
+            return None
+        
+        DATE_FORMAT = "%Y-%m-%d"
+        TIME_FORMAT = "%H:%M"   
+
+        return {
+            "date": self.reservation_date.strftime(DATE_FORMAT),
+            "time": self.reservation_time.strftime(TIME_FORMAT),
+            "capacity": self.party_size,
+            "maxAlternative": 4
+        }
+        
+    def create_reservation_request(self) -> Optional[dict]:
+        
+        if self.reservation_date is None or self.reservation_time is None or self.party_size is None or self.customer_name is None or self.customer_phone is None:
+            return None
+        
+        DATE_FORMAT = "%Y-%m-%d"
+        TIME_FORMAT = "%H:%M"   
+
+        return {
+            "customerName": self.customer_name,
+            "customerPhone": self.customer_phone,
+            "bookingDate": self.reservation_date.strftime(DATE_FORMAT),
+            "bookingTime": self.reservation_time.strftime(TIME_FORMAT),
+            "capacity": self.party_size,
+        }        

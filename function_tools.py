@@ -4,6 +4,9 @@ from pydantic import Field
 from datetime import datetime
 from agent import logger
 from livekit.agents.voice import RunContext
+from livekit.agents import (utils, ToolError)
+import aiohttp
+import asyncio
 
 @function_tool()
 async def update_name(
@@ -92,10 +95,44 @@ async def check_availability(
 ) -> str:
     """Called to check availability.
     """
-    userdata = context.userdata
-    logger.info(userdata.summarize())
-    return "Not Available, The avialable is 18:20, 19:00, and 20:00"
+    url = "http://localhost:3000/booking/3/check"
+     
+    requestBody = context.userdata.check_availability_request()
+    print(requestBody)
+    try:
+        session = utils.http_context.http_session()
+        timeout = aiohttp.ClientTimeout(total=5)
+        async with session.post(url, json=requestBody, timeout=timeout) as resp:
+            if resp.status >= 400:
+                raise ToolError(f"error: HTTP {resp.status}")
+            return await resp.text()
+    except ToolError:
+        raise
+    except (aiohttp.ClientError, asyncio.TimeoutError) as e:
+            raise ToolError(f"error: {e!s}") from e
 
+@function_tool()
+async def create_reservation(
+    context: RunContext,
+) -> str:
+    """Make reservation (create booking)
+    """
+    url = "http://localhost:3000/booking/3"
+     
+    requestBody = context.userdata.create_reservation_request()
+    print(requestBody)
+    try:
+        session = utils.http_context.http_session()
+        timeout = aiohttp.ClientTimeout(total=5)
+        async with session.post(url, json=requestBody, timeout=timeout) as resp:
+            if resp.status >= 400:
+                raise ToolError(f"error: HTTP {resp.status}")
+            return await resp.text()
+    except ToolError:
+        raise
+    except (aiohttp.ClientError, asyncio.TimeoutError) as e:
+            raise ToolError(f"error: {e!s}") from e
+        
 
 __all__ = [
     "update_name",
@@ -104,5 +141,6 @@ __all__ = [
     "update_reservation_time",
     "update_party_size",
     "update_special_request",
-    "check_availability"
+    "check_availability",
+    "create_reservation",
 ]

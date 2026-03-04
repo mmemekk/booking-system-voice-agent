@@ -30,6 +30,7 @@ class Assistant(Agent):
                 update_party_size,
                 update_special_request,
                 check_availability,
+                create_reservation
             ]
         )
 
