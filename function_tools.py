@@ -95,7 +95,7 @@ async def check_availability(
 ) -> str:
     """Called to check availability.
     """
-    url = "http://localhost:3000/booking/3/check"
+    url = "https://booking-system-backend-production-54ed.up.railway.app/booking/3/check"
      
     requestBody = context.userdata.check_availability_request()
     print(requestBody)
@@ -117,7 +117,7 @@ async def create_reservation(
 ) -> str:
     """Make reservation (create booking)
     """
-    url = "http://localhost:3000/booking/3"
+    url = "https://booking-system-backend-production-54ed.up.railway.app/booking/3"
      
     requestBody = context.userdata.create_reservation_request()
     print(requestBody)

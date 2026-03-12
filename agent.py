@@ -1,11 +1,10 @@
 import logging
 
 from dotenv import load_dotenv
-
 from livekit import agents, rtc
 from livekit.agents import AgentServer, room_io
 from livekit.agents.voice import Agent, AgentSession, RunContext
-from livekit.plugins import (google,noise_cancellation)
+from livekit.plugins import (google,noise_cancellation, openai)
 
 from instruction import INSTRUCTION
 from function_tools import *
@@ -31,6 +30,7 @@ class Assistant(Agent):
                 update_special_request,
                 check_availability,
                 create_reservation
+                
             ]
         )
 
@@ -47,8 +47,9 @@ async def my_agent(ctx: agents.JobContext):
             voice="Puck",
             temperature=0.5,
         ),
+        # llm=openai.realtime.RealtimeModel(voice="marin"),
+    
     )
-
     await session.start(
         room=ctx.room,
         agent=Assistant(),
@@ -58,7 +59,6 @@ async def my_agent(ctx: agents.JobContext):
             ),
         ),
     )
-
     await session.generate_reply(
         instructions="Greet the user and offer your assistance. You should start by speaking in English."
     )

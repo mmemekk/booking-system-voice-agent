@@ -1,0 +1,5 @@
+[project]
+  subdomain = "genie-rl2gtsdy"
+
+[agent]
+  id = "CA_oWroQtuLAgWp"
