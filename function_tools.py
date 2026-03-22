@@ -35,7 +35,6 @@ async def update_phone(
     return f"The phone number is updated to {phone}"
 
 @function_tool()
-#must use try catch block if Value Error
 async def update_reservation_date(
     reservation_date: Annotated[str, Field(description="The customer's reservation date. Must be in YYYY-MM-DD format")],
     context: RunContext,
@@ -49,7 +48,6 @@ async def update_reservation_date(
     return f"The reservation date is updated to {reservation_date}"
 
 @function_tool()
-#must use try catch block if Value Error
 async def update_reservation_time(
     reservation_time: Annotated[str, Field(description="The customer's reservation time. Must be in HH:MM format")],
     context: RunContext,
@@ -101,7 +99,7 @@ async def check_availability(
     print(requestBody)
     try:
         session = utils.http_context.http_session()
-        timeout = aiohttp.ClientTimeout(total=5)
+        timeout = aiohttp.ClientTimeout(total=10) 
         async with session.post(url, json=requestBody, timeout=timeout) as resp:
             if resp.status >= 400:
                 raise ToolError(f"error: HTTP {resp.status}")

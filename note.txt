@@ -1,0 +1,2 @@
+- use audio parameters in the session.say() to reduce reponse time
+- try to eliminate the prompt loading in production

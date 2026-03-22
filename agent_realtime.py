@@ -2,10 +2,9 @@ import logging
 
 from dotenv import load_dotenv
 from livekit import agents, rtc
-from livekit.agents import AgentServer, room_io, TurnHandlingOptions, inference
+from livekit.agents import AgentServer, room_io
 from livekit.agents.voice import Agent, AgentSession, RunContext
-from livekit.plugins import google,noise_cancellation, silero
-from livekit.plugins.turn_detector.multilingual import MultilingualModel
+from livekit.plugins import (google,noise_cancellation, openai)
 
 from instruction_loader import load_agent_instruction, load_greet_instruction
 from function_tools import *
@@ -39,50 +38,21 @@ server = AgentServer()
 
 @server.rtc_session()
 async def my_agent(ctx: agents.JobContext):
+    
     INSTRUCTION = load_agent_instruction()
     GREET_INSTURCTION = load_greet_instruction()
     userdata = UserData()
 
     session = AgentSession[UserData](
         userdata=userdata,
-        stt=inference.STT(
-            model="deepgram/nova-3",
-            language="en",
-            extra_kwargs={"numerals": True},
-        ),
-        
-        llm="openai/gpt-4.1-mini",
-        tts=inference.TTS(
-            model="cartesia/sonic-3", 
-            voice="47c38ca4-5f35-497b-b1a3-415245fb35e1", 
-            language="en",
-            extra_kwargs={
-                "speed": 0.9,
-                "volume": 1.0,
-                "emotion": "excited"
-            }
-        ),
-        # turn_handling=TurnHandlingOptions(
-        #     turn_detection=MultilingualModel(),
+        # llm=google.realtime.RealtimeModel(
+        #     model="gemini-2.5-flash-native-audio-preview-12-2025",
+        #     voice="Puck",
+        #     temperature=0.5,
         # ),
-        # vad=silero.VAD.load(),
-        vad=silero.VAD.load(),
-        turn_handling=TurnHandlingOptions(
-        turn_detection=MultilingualModel(),
-            endpointing={
-                "min_delay": 0.2,
-                "max_delay": 0.8,
-                "adaptive": True,
-            },
-            interruption={
-                "enabled": True,
-                "mode": "adaptive",
-                "min_duration": 0.2,
-            },
-       ),
-
-    )
+        llm=openai.realtime.RealtimeModel(voice="marin"),
     
+    )
     await session.start(
         room=ctx.room,
         agent=Assistant(INSTRUCTION),
@@ -92,9 +62,8 @@ async def my_agent(ctx: agents.JobContext):
             ),
         ),
     )
-    await session.say(
-        GREET_INSTURCTION,
-        allow_interruptions=False
+    await session.generate_reply(
+        instructions=GREET_INSTURCTION
     )
 
 
