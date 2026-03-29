@@ -58,4 +58,5 @@ class UserData:
             "bookingDate": self.reservation_date.strftime(DATE_FORMAT),
             "bookingTime": self.reservation_time.strftime(TIME_FORMAT),
             "capacity": self.party_size,
+            "specialRequest": self.special_request or None
         }        

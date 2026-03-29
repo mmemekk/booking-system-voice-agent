@@ -2,14 +2,16 @@ import logging
 
 from dotenv import load_dotenv
 from livekit import agents, rtc
-from livekit.agents import AgentServer, room_io, TurnHandlingOptions, inference
+from livekit.agents import AgentServer, room_io, TurnHandlingOptions, inference, WorkerOptions, JobProcess
 from livekit.agents.voice import Agent, AgentSession, RunContext
 from livekit.plugins import google,noise_cancellation, silero
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
+import asyncio
 
 from instruction_loader import load_agent_instruction, load_greet_instruction
 from function_tools import *
 from userdata import UserData
+from transfer_utils import transfer_call
 
 logger = logging.getLogger("AGENT-MANAGEMENT")
 logger.setLevel(logging.INFO)
@@ -35,14 +37,20 @@ class Assistant(Agent):
             ]
         )
 
+def prewarm(proc: JobProcess):
+    # Load heavy models here so they stay in memory
+    proc.userdata["vad"] = silero.VAD.load()
+    
 server = AgentServer()
+server.setup_fnc = prewarm
+
 
 @server.rtc_session()
 async def my_agent(ctx: agents.JobContext):
     INSTRUCTION = load_agent_instruction()
     GREET_INSTURCTION = load_greet_instruction()
     userdata = UserData()
-
+    
     session = AgentSession[UserData](
         userdata=userdata,
         stt=inference.STT(
@@ -62,26 +70,29 @@ async def my_agent(ctx: agents.JobContext):
                 "emotion": "excited"
             }
         ),
-        # turn_handling=TurnHandlingOptions(
-        #     turn_detection=MultilingualModel(),
-        # ),
-        # vad=silero.VAD.load(),
-        vad=silero.VAD.load(),
         turn_handling=TurnHandlingOptions(
-        turn_detection=MultilingualModel(),
-            endpointing={
-                "min_delay": 0.2,
-                "max_delay": 0.8,
-                "adaptive": True,
-            },
-            interruption={
-                "enabled": True,
-                "mode": "adaptive",
-                "min_duration": 0.2,
-            },
-       ),
+            turn_detection=MultilingualModel(),
+        ),
+        # vad=silero.VAD.load(),
+        vad = ctx.proc.userdata["vad"],
 
     )
+    
+    @ctx.room.on("sip_dtmf_received")
+    def handle_dtmf(dtmf: rtc.SipDTMF):
+        if dtmf.digit == "0":
+            logger.info("🚨 User pressed 0! Transfering to Restaurant.")
+            session.interrupt()
+            async def execute_transfer_sequence():
+                await session.say(
+                    "Transferring you to an operator now, please hold on.",
+                    allow_interruptions=False
+                )
+                await transfer_call(
+                    participant_identity=dtmf.participant.identity,
+                    room_name=ctx.room.name,
+                )
+            asyncio.create_task(execute_transfer_sequence())
     
     await session.start(
         room=ctx.room,
@@ -92,8 +103,21 @@ async def my_agent(ctx: agents.JobContext):
             ),
         ),
     )
+    
+    participant = await ctx.wait_for_participant()
+    if participant.kind == rtc.ParticipantKind.PARTICIPANT_KIND_SIP:
+
+        phone_number = participant.attributes.get('sip.phoneNumber', 'unknown')
+        logger.info(f"SIP caller joined from phone number: {phone_number}")
+        formattedPhoneNumber = "0"+phone_number[3:]
+        userdata.customer_phone = formattedPhoneNumber
+        
+        logger.info(userdata.summarize())
+    else:
+        logger.info(f"Non-SIP participant joined: {participant.identity}")
+    
     await session.say(
-        GREET_INSTURCTION,
+        "Good Morning",
         allow_interruptions=False
     )
 
