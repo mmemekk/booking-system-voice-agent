@@ -79,7 +79,7 @@ async def update_special_request(
     special_request: Annotated[str, Field(description="The customer's special request")],
     context: RunContext,
 ) -> str:
-    """Called when the customer provides their special request.
+    """Called when the customer provides their special request regarding their booking.
     """
     userdata = context.userdata
     userdata.special_request = special_request
@@ -91,16 +91,18 @@ async def update_special_request(
 async def check_availability(
     context: RunContext,
 ) -> str:
-    """Called to check availability.
+    """Called to check table availability.
     """
     url = "https://booking-system-backend-production-54ed.up.railway.app/booking/3/check"
-     
+    
+    await context.session.say(" Just a moment please ")
+    await asyncio.sleep(0.5)
     requestBody = context.userdata.check_availability_request()
     print(requestBody)
     try:
-        session = utils.http_context.http_session()
+        http_session = utils.http_context.http_session()
         timeout = aiohttp.ClientTimeout(total=10) 
-        async with session.post(url, json=requestBody, timeout=timeout) as resp:
+        async with http_session.post(url, json=requestBody, timeout=timeout) as resp:
             if resp.status >= 400:
                 raise ToolError(f"error: HTTP {resp.status}")
             return await resp.text()
@@ -113,16 +115,18 @@ async def check_availability(
 async def create_reservation(
     context: RunContext,
 ) -> str:
-    """Make reservation (create booking)
+    """Call this to create the booking reservation.
     """
     url = "https://booking-system-backend-production-54ed.up.railway.app/booking/3"
-     
+    
+    await context.session.say(" Great! Just a moment please. I'm createing your reservation. ")
+    await asyncio.sleep(0.5)
     requestBody = context.userdata.create_reservation_request()
     print(requestBody)
     try:
-        session = utils.http_context.http_session()
+        http_session = utils.http_context.http_session()
         timeout = aiohttp.ClientTimeout(total=5)
-        async with session.post(url, json=requestBody, timeout=timeout) as resp:
+        async with http_session.post(url, json=requestBody, timeout=timeout) as resp:
             if resp.status >= 400:
                 raise ToolError(f"error: HTTP {resp.status}")
             return await resp.text()

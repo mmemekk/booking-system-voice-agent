@@ -10,7 +10,7 @@ logger.setLevel(logging.INFO)
 
 async def transfer_call(participant_identity: str, room_name: str) -> None:
   async with api.LiveKitAPI() as livekit_api:
-    transfer_to = 'tel:+66866569591'
+    transfer_to = 'tel:+66819140199'
 
     try:
       # Create transfer request

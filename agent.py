@@ -117,7 +117,7 @@ async def my_agent(ctx: agents.JobContext):
         logger.info(f"Non-SIP participant joined: {participant.identity}")
     
     await session.say(
-        "Good Morning",
+        GREET_INSTURCTION,
         allow_interruptions=False
     )
 
