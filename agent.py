@@ -60,6 +60,7 @@ async def my_agent(ctx: agents.JobContext):
         ),
         
         llm="openai/gpt-4.1-mini",
+        # llm="google/gemini-3.1-flash-lite-preview",
         tts=inference.TTS(
             model="cartesia/sonic-3", 
             voice="47c38ca4-5f35-497b-b1a3-415245fb35e1", 
